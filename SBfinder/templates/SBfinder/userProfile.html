@@ -1,0 +1,296 @@
+{% extends "SBfinder/base.html" %}
+{% load SBfinder_extra %}
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+
+        .d-inline-flex{
+            gap:10px;
+            margin-bottom: 10px;
+            margin-left: 2px;
+        }
+
+        .nounderline {
+            text-decoration: none;
+            color: #026670;
+        }
+
+        .btn {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        height: 30%;
+        }
+
+        .btn:hover {
+        background-color: #edeae5;
+        color: #026670; 
+        }
+
+
+        .btnnobg {
+        background-color: #03474d;
+        color: #95edd7;
+        border: 2px solid #03474d;
+        height: 40%;
+        text-decoration: none;
+        }
+
+        .btnnobg:hover {
+        color: #ff0000;
+        }
+
+        .btn2 {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        padding: 7px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 15px 20px;
+        }
+
+        .btn3 {
+        background-color: #95edd7;
+        color: #bb605e;
+        border: 2px solid #026670;
+        height: 20%;
+        font-size: .80em;
+
+        }
+
+        a:hover {color: #026670;}
+
+        .card-header {
+        background-color: #026670;
+        color: #edeae5;
+        }
+
+        .card-body {
+        background-color: #feffff;
+        }
+
+        h1{
+        font-size: 3.5em;
+        }
+
+        .right{
+        float:right;
+        }
+
+        .left{
+        float:left;
+        padding: .5% 0;
+        }
+
+        ul {
+            line-height: 10px;
+        }
+
+        .img-circle {
+            border-radius: 50%;
+        }
+
+        /* Style images */
+.container img {
+  float: left;
+  max-width: 60px;
+  width: 100%;
+  margin-right: 20px;
+  border-radius: 50%;
+  height: 60px;
+}
+    </style>
+</head>
+
+<body>
+
+<script>
+function toggle(source) {
+  var checkboxes = document.getElementsByName('checks');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+ }
+
+function uncheckAll() {
+ var checkAll = document.getElementById('checkAll');
+ var checkboxes = document.getElementsByName('checks');
+
+ var checkAll_status = 0;
+
+ for(var i=0, n=checkboxes.length;i<n;i++) {
+    if (checkboxes[i].checked == true) {
+        checkAll_status++;
+    }
+  }
+
+ // if all boxes are checked but the checkAll box is not checked, check it
+ if ((checkAll_status == checkboxes.length) && (checkAll.checked == false)) {
+    checkAll.checked = true;
+ }
+
+ // if not all boxes are checked but the checkAll box is checked, uncheck it
+ if ((checkAll_status < checkboxes.length) && (checkAll.checked == true)) {
+    checkAll.checked = false;
+
+ }
+
+}
+
+
+
+</script>
+
+{% include 'SBfinder/messages.html' %}
+
+<div class = "pt-4 mb-0 text-center">
+<img src="{{ userInfo.avatar.url }}" class="img-circle" alt="User Image" width = "200" height = "200">
+</div>
+
+<div class="col-md-12 inline-flex">
+    <h2 class="pt-3 text-center text-capitalize font-weight-bold">Welcome, {{ userInfo.user_name }}!</h2>
+</div>
+
+<div class="text-center">
+    <h5 class="text-center font-weight-bold">{{ userInfo.user_email }}</h5>
+    {% if userInfo.year|length != 0 %}
+    <h5> {{ userInfo.year }} Year</h5>
+    {% endif %}
+
+    {% if userInfo.major|length != 0 %}
+    <h5> {{userInfo.major }}</h5>
+    {% endif %}
+
+</div>
+
+<hr/>
+
+<!-- Schedule Section -->
+<form action="{% url 'SBfinder:generate_SB'%}" method="POST">
+    {% csrf_token %}
+    <h2 class="pt-2 pb-1 text-left font-weight-bold">&emsp;Schedule</h2>
+    <div class = "text-center">
+        {% if userInfo.course_set.all|length == 0 %}
+        <h4 style="color:#026670;">You don't have anything in your schedule. Explore classes using the class search!</h4>
+        {% endif %}
+    </div>
+
+    <div class="mx-auto" style="width: 1200px;">
+        <!-- Check All box -->
+        {% if userInfo.course_set.all|length != 0 %}
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="checkAll" onClick="toggle(this)"> **Check here if you
+            want to select all classes in your schedule<br>
+        </div>
+        {% endif %}
+        {% for class in userInfo.course_set.all %}
+
+        <div class="card left-align">
+            <div class="h4 card-header">
+                <strong class="left">{{ class.subject }} {{ class.catalog_number }}: {{ class.description }}</strong>
+                <button type="button" class="btn right">
+                    <a href=" {% url 'SBfinder:delete_from_schedule' class.id%} " class="nounderline">Remove from
+                        schedule</a>
+                </button>
+                <br>
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    {% instructorParse_Name class.instructor as instructor_name %}
+                    <strong>Instructor: </strong>{{ instructor_name }} <br>
+                    {%instructorParse_Email class.instructor as instructor_email %}
+                    <strong>Instructor Email: </strong>{{ instructor_email }} <br>
+                    <strong>Section: </strong>{{ class.course_section }}-{{ class.component }} <br>
+                    <strong>Class Number: </strong>{{ class.course_number }}</br>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="checks"
+                               value="{{ class }}" onclick="uncheckAll()">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Check here if you would like to
+                            search for study buddies from this class</label>
+                    </div>
+                </blockquote>
+            </div>
+
+
+        </div>
+        {% endfor %}
+
+        <br>
+
+        {% if userInfo.course_set.all|length != 0 %}
+        <div class="d-inline-flex">
+            <input class="btn align-self-center" style="background-color:#026670; color:#edeae5; font-size:1.5em;"
+                   type="submit" value="Generate Study Buddy" name="generate_SB"/>
+        </div>
+        {% endif %}
+
+    </div>
+
+</form>
+
+<hr/>
+
+<!-- Friend Section -->
+
+<div class = "d-inline-flex">
+    <h2 class="pt-2 text-left font-weight-bold">&ensp;&ensp;Friends </h2>
+</div>
+<div class = "text-center">
+        {% if userInfo.friends.all|length == 0 %}
+        <h4 style="color:#026670;">You don't have any friends yet :( Add a friend from your list of study buddies!</h4>
+        <br>
+        {% endif %}
+</div>
+
+<div class="container">
+    <div class="row">
+    {% for friend in userInfo.friends.all %}
+    <div class="col-sm-3">
+        <div class="card ml-2 mb-3" style="width: 17rem;">
+            <div class = "card-header" style = "background-color: #03474d; display: inline; justify-content:space-between;">
+                <img src="{{ friend.avatar.url }}" class="card-img-left float-left" height = "180">
+                <h5 class = "text-capitalize mt-3 pt-1">{{ friend.user_name }} 
+                    <button type="button" class="btnnobg right">
+                        <a href=" {% url 'SBfinder:delete_friend' friend.id%} " class = "btnnobg fa fa-trash-o"></a>
+                    </button>
+                </h5> 
+            </div>
+
+            <div class="card-body text-center" style = "background-color: #026670; color:#edeae5;">
+                <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    View Schedule </button>
+                    <button type="button" class="btn text-center">
+                        <a href=" {% url 'SBfinder:message_log' friend.id%} " class = "nounderline">Message</a>
+                    </button>
+                <div class="collapse" id="collapseExample">
+                  <div class="card card-body">
+
+                <!-- SCHEDULE -->
+                {% for class in friend.course_set.all %}
+                <ul class="list-group list-group-flush">
+                    {% if class in userInfo.course_set.all %}
+                    <li class="list-group-item text-center" style = "background-color: #95edd7;">{{ class.subject }} {{ class.catalog_number }}</li>
+                    {% else %}
+                    <li class="list-group-item text-center">{{ class.subject }} {{ class.catalog_number }}</li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+                <div class = "mt-2" style = "color: #026670; font-size: 0.6em;">*highlighted classes are classes you have in common</div>
+                <!-- SCHEDULE END -->
+                <br>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+</div>
+
+</body>
+{% endblock %}
+

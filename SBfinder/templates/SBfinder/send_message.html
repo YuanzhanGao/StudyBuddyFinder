@@ -1,0 +1,234 @@
+{% extends "SBfinder/base.html" %}
+{% load SBfinder_extra %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+
+  body{
+    background-color: #feffff;
+  }
+
+  /* Chat containers */
+.container {
+  border: 2px solid #dedede;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+  margin-left: 3em;
+}
+
+/* Darker chat container */
+.darker {
+  border-color: #ccc;
+  background-color: #ddd;
+}
+
+/* Clear floats */
+.container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Style images */
+.container img {
+  float: left;
+  max-width: 60px;
+  width: 100%;
+  margin-right: 20px;
+  border-radius: 50%;
+  height: 60px;
+}
+
+/* Style the right image */
+.container img.right {
+  float: right;
+  margin-left: 20px;
+  margin-right:0;
+  border-radius: 50%;
+}
+
+/* Style time text */
+.time-right {
+  float: right;
+  color: #aaa;
+}
+
+/* Style time text */
+.time-left {
+  float: left;
+  color: #999;
+}
+
+
+textarea {
+    display: block;
+    margin-left: 2px;
+    margin-right: auto;
+}
+
+
+.nounderline {
+            text-decoration: none;
+            color: #95edd7;
+
+        }
+
+.top {
+    margin-top: 4.5%;
+    }
+
+  .bottom {
+    margin-bottom: 0%;
+    }
+
+.btn {
+    background-color: #026670;
+    color: #95edd7;
+    height: 40px;
+    width: 60px;
+    text-align: center;
+    margin-left: 8px;
+    }
+
+
+.btn2 {
+    background-color: #95edd7;
+    color: #026670;
+    border: 2px solid #026670;
+    padding: 7px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0px;
+    }
+
+    button {
+      border: 0;
+    outline: 0;
+    }
+
+
+
+
+</style>
+<body>
+
+<!--
+Title: HOW TO- Chat
+Author: --
+Date: 11/20/22
+URL: https://www.w3schools.com/howto/howto_css_chat.asp
+-->
+
+<br>
+<div class="text-center fixed-top top" style="background-color:#edeae5; border-bottom:1.5px solid #9c9494;">
+    <h1 class="pt-2 pb-2 font-weight-bold text-capitalize">Messages with {{other_user.user_name}}</h1>
+</div>
+<br>
+{% include 'SBfinder/messages.html' %}
+
+<div style="margin-bottom:60px;">
+
+    {%count_message_number other_user user as counter%}
+    {% if counter == 0 %}
+
+    <div style="display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+  color: gray;">
+        <h1>No message between you and {{other_user.user_name }} yet!</h1>
+    </div>
+
+    {% else %}
+    {% for message in message_model %}
+    {% if message.to_user == other_user %}
+    <div class="container">
+        <img src="{{ message.from_user.avatar.url }}" alt="Avatar">
+        <p style="font-size:14px; color:#538b01; font-weight:bold; font-style:italic;">
+            From
+            <span style="color: #ff0000">{{message.from_user.user_name}}</span>
+            to
+            <span style="color: #0000a0">{{message.to_user.user_name }}</span>
+        </p>
+        <p>{{ message.message_body }}</p>
+        <span class="time-right">{{ message.time }}</span>
+    </div>
+
+    {% else %}
+    <div class="container darker">
+        <img src="{{ message.from_user.avatar.url }}" alt="Avatar" class="right">
+        <p style="font-size:14px; color:#538b01; font-weight:bold; font-style:italic;">
+            From
+            <span style="color: #ff0000">{{message.from_user.user_name}}</span>
+            to
+            <span style="color: #0000a0">{{message.to_user.user_name }}</span>
+        </p>
+        <p>{{ message.message_body }}</p>
+        <span class="time-left">{{ message.time }}</span>
+    </div>
+
+    {% endif %}
+    {% endfor %}
+
+    {% endif %}
+
+</div>
+
+<div class="text-center fixed-bottom bottom">
+    <div class="pt-2 pb-1" style="border-top:1.5px solid #9c9494; background-color:#edeae5;">
+        <form action="{% url 'SBfinder:generate_message' other_user.id %}" method="post">
+            {% csrf_token %}
+            <div class="d-inline-flex justify-content-center align-items-center">
+                <textarea class="form-control" style="width:1000;" id="message_body" name="message_body"
+                          placeholder="Your message goes here... &#10;You can press 'Enter' to send and 'PgUp' to update the message stream"
+                          rows="2" cols="100"></textarea>
+
+                <input type="submit" value="SEND" class="btn mr-2" id="message_submit">
+
+                <button type="button" id="message_refresh">
+                    <a id="message_refresh_link" href=" {% url 'SBfinder:message_log' other_user.id%} "
+                       class="btn2 rounded-1">Update</a>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<script>
+    document.querySelector('#message_body').focus(); // focus on the chat input area
+
+    // 2 different ways to handle "keyup" event
+    document.querySelector('#message_body').onkeyup = function(e) {
+            if (e.keyCode === 13) {
+                document.querySelector('#message_submit').click();
+            }
+        };
+
+
+    var message = document.getElementById('message_body');
+    message.addEventListener("keyup", function(event) {
+        if (event.keyCode === 33) {
+            document.querySelector('#message_refresh_link').click();
+
+        }
+    });
+
+
+
+
+
+
+
+</script>
+
+
+</body>
+
+
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "SBfinder/base.html" %}
+{% load SBfinder_extra %}
+
+{% block content %}
+
+<style>
+    
+    .d-inline-flex{
+            gap:10px;
+            margin-bottom: 10px;
+            margin-left: 2px;
+        }
+
+        .nounderline {
+            text-decoration: none;
+            color: #026670;
+        }
+
+        .btn {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        height: 30%;
+        }
+
+        .btnnobg {
+        background-color: #feffff;
+        color: #026670;
+        border: 2px solid #feffff;
+        height: 30%;
+        }
+
+
+        .btn2 {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        padding: 7px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px 35px;
+        border-radius: 3px;
+        }
+
+        a:hover {color: #026670;}
+
+        .card-header {
+        background-color: #026670;
+        color: #edeae5;
+        }
+
+        .card-body {
+        background-color: #feffff;
+        }
+
+        h1{
+        font-size: 3.5em;
+        }
+
+        li span {
+        position: relative;
+        left: -10px;
+        }
+
+        .right{
+        float:right;
+        }
+
+        .left{
+        float:left;
+        padding: .5% 0;
+        }
+ 
+
+</style>
+<body>
+{% include 'SBfinder/messages.html' %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<br>
+<h1 class="pt-2 text-center font-weight-bold">Study Sessions </h1>
+
+<hr/>
+
+<!-- STUDY SESSION PROPOSALS -->
+<h2 class="text-left font-weight-bold mb-2">&ensp;&ensp;Study Session Proposals </h2>
+
+{% get_current_user_tag user as current_user %}
+{% check_SS_number study_session_request current_user as SS_status %}
+
+<div class="text-center">
+    {% if SS_status == False %}
+    <h4 style="color:#026670;">&ensp;&ensp;&ensp;You do not currently have any pending proposals. </h4>
+    {% endif %}
+</div>
+
+<div class="container">
+    <div class="row">
+        {% for SS in study_session_request %}
+        {% if SS.to_user == user|getcurrentUser %}
+        <div class="col-lg">
+            <div class="card mx-auto" style="width: 400px;">
+                <div class="h4 card-header text-center" >
+                    <strong class="text-center">{{ SS.study_session.title }}</strong>
+                </div>
+                <div class="card-body text-center">
+                    <blockquote class="blockquote mb-0">
+                        <strong>Date: </strong>{{ SS.study_session.date }}<br>
+                        <strong>Time: </strong>{{ SS.study_session.time }}<br>
+
+                        <button class="btnnobg" type="button" style = "background-color:#feffff; outline:none;" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                            View More <i class="fa fa-arrow-down"></i>
+                        </button>
+
+                        <div class="collapse" id="collapseExample">
+                            <div class="card card-body">
+                                <strong>Description:</strong>
+                                {{ SS.study_session.description }} <br>
+                                <strong>People who have accepted:</strong> 
+                                {% for people in SS.study_session.users.all %}
+                                <div>
+                                    <li class="nobullets text-capitalize" style="list-style-type: square;"><span>{{ people.user_name }} </span></li>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </blockquote>
+                    <button type="button" class="pt-1 mt-2 btn2">
+                        <a href="/sbfinder/accept_SS_request/{{ SS.pk }}/" class="nounderline">Accept</a>
+                    </button>
+                </div>
+            </div>
+
+            <br>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<hr/>
+
+<!-- STUDY SESSION SECTION -->
+
+<h2 class="text-left font-weight-bold">&ensp;&ensp;Scheduled Study Sessions </h2>
+
+{% get_current_user_tag user as current_user %}
+<div class = "text-center">
+        {% if current_user.study_session_set.all|length == 0 %}
+        <h4 style="color:#026670;">&ensp;&ensp;&ensp;You haven't proposed a study session yet :( Schedule one with your friends! </h4>
+        {% endif %}
+</div>
+
+
+<div class="container pb-3">
+    {% for SS in current_user.study_session_set.all %}
+        {% passed_due_date SS.exact_time as passed %}
+        {% if passed == False %}
+        <div class="card left-align">
+                <div class="h4 card-header">
+                    <strong class = "left">{{ SS.title }}</strong>
+                    <button type="button" class="btn right">
+                        <a href=" {% url 'SBfinder:leave_study_session' SS.id%} " class = "nounderline">Leave the Study Session</a>
+                    </button><br>
+                </div>
+                    <div class="card-body">
+                        <blockquote class="blockquote mb-0">
+                            <strong>Date & Time: </strong>{{ SS.exact_time }} <br>
+                            <strong>Description: </strong><br>
+                            {{ SS.description }} <br>
+                            <strong>Users who have accepted the request:</strong> 
+                            {% for people in SS.users.all %}
+                                <ul>
+                                    <li class="text-capitalize pt-2" style = "list-style-type: square; line-height: 0.2em;">{{ people.user_name }} </li>
+                                </ul>
+                            {% endfor %}
+                        </blockquote>
+                    </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+</div>
+
+<div class = "align-items-left">
+    <a class="btn2 rounded-2 nounderline align-self-center" style="background-color:#026670; color:#edeae5; font-size:1.5em;" href="/sbfinder/generateSS/">Schedule Session</a>
+</div>
+
+
+
+</body>
+
+
+{% endblock %}

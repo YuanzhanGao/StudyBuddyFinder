@@ -1,0 +1,17 @@
+{% if messages %}
+    {% for message in messages %}
+    <br>
+    {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="alert alert-success center-text" style = "background-color: #47d2ab; color:#000000;" id="msg" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% else %}
+    <div class="alert alert-success center-text" style = "background-color: #bb605e; color:#000000;" id="msg" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+{% endif %}
+

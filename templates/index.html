@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+{% load bootstrap5 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{% load socialaccount %}
+
+<style>
+body {
+    background-color: #95edd7;
+    font-family: "trebuchet ms", "sans-serif";
+    }
+
+.card {
+    background-color: #026670;
+    color: #edeae5;
+    }
+h5{
+
+    color: #95edd7;
+}
+</style>
+<body>
+    <br><br><br><br><br><br>
+    <div class = "col d-flex justify-content-center my-auto">
+    <div class="card text-center m-auto mt-4" style="width: 400px;" >
+
+        <div class="card-body">
+            <br><h1>Study Buddy Finder</h1><br>
+                {% if user.is_authenticated %}
+                <h5>Welcome. You are logged in as</h5><h5 class="text-uppercase">{{ user.username }}</h5><br>
+                    <a style = "color: #edeae5;" href = "{% url 'SBfinder:profile' user.username %}">Go to Profile</a><br>
+                    <a style = "color: #edeae5;" href = '/logout'>Log Out</a>
+                {% else %}
+                    <h5><a style = "color: #edeae5;" href = "{% provider_login_url 'google' %}">Login With Google</a></h5>
+                {% endif %}
+                <br>
+        </div>
+    </div>
+</div>
+</body>
+
+
+</html>

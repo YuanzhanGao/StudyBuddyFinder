@@ -1,0 +1,137 @@
+{% extends "SBfinder/base.html" %}
+{% block content %}
+
+<head>
+    <style>
+
+    /*Title: Styling an input type="file" button */
+    /*Author: Josh Crozier*/
+    /*Date: 11/25/2022 */
+    /* URL: https://stackoverflow.com/questions/572768/styling-an-input-type-file-button */
+
+    input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+jQuery(document).ready(function () {
+    jQuery('#img').bind('change', function() {
+    var fileName = '';
+    fileName = jQuery(this).val();
+    jQuery('#file-selected').html(fileName);
+    });
+    });
+
+    </script>
+
+</head>
+
+<body>
+
+{% include 'SBfinder/messages.html' %}
+
+<!-- Title: Bootstrap 5 edit user profile template
+     Author: Edgar Burongoh
+     Date: 11/23/2022
+     URL: https://bbbootstrap.com/snippets/bootstrap-5-myprofile-90806631-->
+
+<div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-3 border-right">
+            <div class="d-flex flex-column align-items-center text-center p-3 py-5"><img class="rounded-circle mt-5"
+                                                                                         width="150px"
+                                                                                         src="{{ userInfo.avatar.url }}">
+                <span
+                        class="font-weight-bold">{{userInfo.user_name}}
+                </span>
+                <span class="text-black-50">{{userInfo.user_email}}</span>
+                <span>
+                </span>
+
+                <form action="{% url 'SBfinder:upload_pic'%}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label for="img" class="custom-file-upload">
+                        <input type="file" id="img" name="img" accept="image/*">
+                        Upload
+                    </label>
+                    <span id="file-selected"></span>
+                    <input type="submit" class="btn btn-primary profile-button mt-2" value="Save Profile Picture">
+                </form>
+
+
+            </div>
+        </div>
+
+        <div class="col-md-5 border-right">
+            <div class="p-3 py-5">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h4 class="text-right">Profile Settings</h4>
+                </div>
+
+                <div style="color: gray; font-size: 1em;">*When you are finished, click "Save Profile" below to update.
+                </div>
+
+                <hr/>
+
+                <div>
+                    Your Google Account Username: {{user.username}}
+                    <div style="color: gray; font-size: 0.8em;">* This is your default username with Google and cannot
+                        be changed here.
+                    </div>
+                </div>
+
+
+                <form action="{% url 'SBfinder:update_profile'%}" method="post">
+                    {% csrf_token %}
+                    <div class="row mt-2">
+                        <div class="col-md-6"><label class="labels">Your username with us: </label><input type="text"
+                                                                                                           class="form-control"
+                                                                                                           placeholder="{{userInfo.user_name}}"
+                                                                                                           name="user_name"
+                                                                                                           value="">
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+
+                        <div class="col-md-12"><label class="labels">School Year</label>
+                            <select name="year" id="year">
+                                <option value="First">First</option>
+                                <option value="Second">Second</option>
+                                <option value="Third">Third</option>
+                                <option value="Fourth">Fourth</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12"><label class="labels">Major</label><input type="text"
+                                                                                         class="form-control"
+                                                                                         placeholder="{{userInfo.major}}"
+                                                                                         name="major"
+                                                                                         value=""></div>
+
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <input type="submit" class="btn btn-primary profile-button" value="Save Profile">
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</body>
+{% endblock %}

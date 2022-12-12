@@ -1,0 +1,82 @@
+{% extends "SBfinder/base.html" %}
+{% load SBfinder_extra %}
+{% block content %}
+
+<head>
+
+   <style>
+        .nounderline {
+            text-decoration: none;
+            color: #95edd7;
+        }
+
+        .d-inline-flex{
+            gap:10px;
+            margin-bottom: 10px;
+            margin-left: 2px;
+        }
+
+        .nounderline {
+            text-decoration: none;
+            color: #026670;
+        }
+
+        .btn {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        height: 30%;
+        }
+
+        .card-body {
+        background-color: #feffff;
+        }
+
+        h1{
+        font-size: 3.5em;
+        }
+
+        .right{
+        float:right;
+        }
+
+        .left{
+        float:left;
+        padding: .5% 0;
+        }
+    </style>
+</head>
+
+<body>
+<br><h1 class="pt-2 text-center font-weight-bold">Schedule</h1><br>
+
+<!-- FORM FOR SUBMITTING THING -->
+<form class = "mx-auto" style = "width:800px;">
+    <div class="form-group">
+      <label for="exampleFormControlInput1">Date</label>
+      <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="MM/DD/YYYY">
+    </div>
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1">Study Session Details</label>
+      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+{% for appt in schedule %}
+{% if appt.to_user == user|getcurrentUser %}
+<div class="card mx-auto" style="width: 400px;">
+    <div class="card-body text-center">
+            <h5>You have an appt request from </h5> <h5 class = "text-capitalize">{{ appt.from_user }} </h5>
+            <button type="button" class="pt-1 mt-2 btn">
+                <a href="/sbfinder/accept_schedule/{{ appt.pk }}/" class="nounderline">Accept</a>
+            </button>
+    </div>
+</div>
+
+{% endif %}
+{% endfor %}
+
+</body>
+
+{% endblock %}

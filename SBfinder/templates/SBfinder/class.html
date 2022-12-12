@@ -1,0 +1,82 @@
+{% extends "SBfinder/base.html" %}
+{% block content %}
+
+<style>
+.button {
+  background-color: #026670;
+  color: #edeae5;
+  border: none;
+  height: 28px;
+}
+
+.btn {
+  background-color: #95edd7;
+  color: #026670;
+}
+
+.card-header {
+  background-color: #026670;
+  color: #edeae5;
+}
+
+.card-body {
+  background-color: #feffff;
+}
+
+h1{
+  font-size: 3.5em;
+}
+
+.right{
+    float:right;
+}
+
+.left{
+    float:left;
+    padding: .4% 0;
+}
+
+
+</style>
+<body>
+
+{% include 'SBfinder/messages.html' %}
+
+<div class="container"><br>
+    <h1 class="text-center">Class Search </h1>
+    <hr/>
+    <form class="text-center mt-4" method="GET">
+        <input type="text" name="subjSearch" placeholder="APMA, CS, etc ..." class="text-center">
+        <input type="text" name="numSearch" placeholder="1010, 3240, etc ..." class="text-center">
+        <button class="button" type="submit">SEARCH CLASS</button>
+    </form>
+</div>
+<div class="mx-auto" style="width: 1200px;"><br>
+    {% if test %}
+    {% for i in test %}
+    <form action="{% url 'SBfinder:add_to_schedule'%}" method="post">
+        {% csrf_token %}
+
+        <div class="card">
+            <div class="h4 card-header">
+                <strong class="left">{{ i.subject }} {{ i.catalog_number }}: {{ i.description }}</strong>
+                <!-- I used a hidden input type to input the entire context variable through POST, and process it using json.loads() -->
+                <input type="hidden" id="class" name="class" value="{{ i }}">
+                <strong><input type="submit" value="Add to Schedule" class="btn right"></strong>
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    Instructor: {{ i.instructor.name }} <br>
+                    Section: {{ i.course_section }}-{{ i.component }} <br>
+                    Class Number: {{ i.course_number }}</br>
+                </blockquote>
+            </div>
+        </div>
+    </form>
+    {% endfor %}
+</div>
+{% else %}
+<br><h3 class="text-center" style="color: #026670;">Oops! We haven't found any classes that match your description :(</h3>
+{% endif %}
+</body>
+{% endblock %}

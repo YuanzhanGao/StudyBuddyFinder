@@ -1,0 +1,131 @@
+{% extends "SBfinder/base.html" %}
+{% load SBfinder_extra %}
+{% block content %}
+
+<head>
+    <style>
+        .nounderline {
+            text-decoration: none;
+            color: #95edd7;
+        }
+
+        .d-inline-flex{
+            gap:10px;
+            margin-bottom: 10px;
+            margin-left: 2px;
+        }
+
+        .nounderline {
+            text-decoration: none;
+            color: #026670;
+        }
+
+        .btn {
+        background-color: #95edd7;
+        color: #026670;
+        border: 2px solid #026670;
+        height: 30%;
+        }
+
+        .card-body {
+        background-color: #feffff;
+        }
+
+        h1{
+        font-size: 3.5em;
+        }
+
+        .right{
+        float:right;
+        }
+
+        .left{
+        float:left;
+        padding: .5% 0;
+        }
+
+
+    </style>
+</head>
+
+<body>
+{% include 'SBfinder/messages.html' %}
+<br>
+<h1 class="pt-2 text-center font-weight-bold">Friend Requests </h1>
+<hr/>
+
+{% get_current_user_tag user as current_user %}
+{% check_SS_number friend_request current_user as friend_status %}
+<!-- Don't be confused by the syntax here, I just used the same function that checks for study session because they share essentially the same logic. -->
+
+<div class="text-center">
+    {% if friend_status == False %}
+    <h4 style = "color:#026670;">You haven't received any friend requests yet. </h4>
+
+    {% recommend_random_friend user as random_friend %}
+
+    {% if random_friend|length == 0 %}
+    <h4 style="color:#026670;"> Unfortunately, we don't have any potential friends to recommend to you :( </h4>
+
+    {% else %}
+    <h3>Based on your schedule, we have recommended the following friends for you: </h3><br>
+    <div class="container">
+        <div class="row">
+            {% for name, class in random_friend.items %}
+                {% accessLastElement name as UserID %}
+                {% get_user_by_id UserID as this_user %}
+
+            <div class="col-sm-2">
+                <div class="card ml-2 mb-3" style="width: 10rem;">
+
+                    <img src="{{ this_user.avatar.url }}" alt="User Image" width = "157.5" height = "150">
+
+                    <div class="card-body text-center" style="background-color: #026670; color:#edeae5;">
+                        <h5 class="text-capitalize text-center">Username: {{ this_user.user_name }}</h5>
+                        <h5>You are both in:</h5>
+                        {% for classes in class %}
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item text-center" style="background-color: white;">{{ classes }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="pt-1 mt-2 btn btn-secondary" style = "background-color: #95edd7;">
+                            <a href="/sbfinder/send_friend_request/{{ UserID }}/"
+                               class="nounderline">Connect</a>
+                        </button>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% for userRequest in friend_request %}
+{% if userRequest.to_user == user|getcurrentUser %}
+<div class="card mx-auto" style="width: 400px;">
+    <div class="card-body text-center">
+        <h5>You have a friend request from </h5> <h5 class="text-capitalize">{{ userRequest.from_user }} </h5>
+         {% if userRequest.from_user.year|length != 0 %}
+            <h6>Year: {{userRequest.from_user.year }}</h6>
+         {% endif %}
+
+         {% if userRequest.from_user.major|length != 0 %}
+            <h6>Major: {{userRequest.from_user.major }}</h6>
+         {% endif %}
+
+        <button type="button" class="pt-1 mt-2 btn">
+            <a href="/sbfinder/accept_friend_request/{{ userRequest.pk }}/" class="nounderline">Accept</a>
+        </button>
+    </div>
+</div>
+
+{% endif %}
+{% endfor %}
+
+</body>
+
+{% endblock %}
