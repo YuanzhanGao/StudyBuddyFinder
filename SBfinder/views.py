@@ -29,45 +29,162 @@ class IndexView(generic.ListView):
 
 
 def getClasses(request):
-    # model = Course // I don't think this is needed here
     data = None
     classes = []
 
-    if 'subjSearch' in request.GET and len(request.GET['subjSearch']) > 0:  # Check if the inputed search is a valid class subject
+    if 'subjSearch' in request.GET and len(
+            request.GET['subjSearch']) > 0:  # Check if the inputed search is a valid class subject
         subj = request.GET['subjSearch'].upper()
         url = "http://luthers-list.herokuapp.com/api/dept/" + subj + "?format=json"  # If subj is valid create the api link
-        response = requests.get(url)  # for the cooresponding department
-        data = response.json() # if there is nothing is subSearch, data variable will remain None
+        response = requests.get(url)  # for the corresponding department
+        data = response.json()  # if there is nothing is subSearch, data variable will remain None
 
-
-    if 'numSearch' in request.GET:# Check if the inputed search is a valid class number
+    if 'numSearch' in request.GET:  # Check if the inputed search is a valid class number
+        # we cannot accept the situation where there is only number search but no subject search, since it takes
+        # way too much resources to go through the api links of all subjects and find course numbers that match
+        # desired condition (well not really that much resources, so I can do it later if I want, but I am lazy
+        # for now); so the rule is: If you input number search only but no subject number, we don't allow you
+        # to search and output an error message.
         if len(request.GET['numSearch']) > 0 and len(request.GET['subjSearch']) == 0:
-            messages.error(request, 'Please enter a valid department number for us to search!')
+            messages.error(request, 'Please provide a valid subject first!')
             return HttpResponseRedirect(reverse('SBfinder:class'))
         else:
+            # if you are able to get to here, this means there are now 3 different scenerios:
+            # 1) that your subjSearch condition exist, so len(subjSearch) > 0, and len(numSearch) > 0;
+            # 2) your subjSearch exist, but You didn't input numSearch, so len(numSearch) == 0;
+            # 3) Neither subjSearch nor numSearch exist, so both length are 0.
+            # we handle each situation below with a different if statement;
             catNumb = request.GET['numSearch']
+
+            # scenerio 1): len(numSearch) > 0, an len(subjSearch) > 0
             if catNumb != "":
+                # filter by catalog_number
+                cat_num_list = []
                 for i in data:
                     num = i['catalog_number']
                     if num == catNumb:
-                        classes.append(i)
-            else:
+                        cat_num_list.append(i)
+
+                # update final_list at the end of each possible loop
+                final_list = cat_num_list
+
+                # filter by instructor name
+                instructor_name = request.GET['instructorSearch']
+                if len(instructor_name) > 0:
+                    instructor_list = []
+                    for i in final_list:
+                        ins_name = i['instructor']['name'].upper().replace(" ", "")
+                        if ins_name == instructor_name.upper().replace(" ", ""):
+                            instructor_list.append(i)
+
+                    # update final_list at the end of each possible loop
+                    final_list = instructor_list
+
+                # filter by unit number of the class
+                minimum_unit = request.GET['UnitNumSearch']
+                if len(minimum_unit) > 0:
+                    unit_list = []
+                    for i in final_list:
+                        class_unit = int(i["units"][-1])
+                        if class_unit >= int(minimum_unit):
+                            unit_list.append(i)
+
+                    # update final_list at the end of each possible loop
+                    final_list = unit_list
+
+                # filter by component of the class
+                component = request.GET.getlist("ComponentSearch")
+                if len(component) > 0:
+                    component_list = []
+                    for i in final_list:
+                        class_component = i["component"]
+                        if class_component in component:
+                            component_list.append(i)
+
+                    # update final_list at the end of each possible loop
+                        final_list = component_list
+
+
+                # assign 'final_list' to the 'classes' context variable
+                classes = final_list
+
+                messages.success(request,
+                                 "We have found " + str(len(classes)) + " classes that match your description!")
+                return render(request, 'SBfinder/class.html',
+                              {
+                                  "test": classes})  # Update their website with the subjects classes, changed url to class from /index
+
+            else:  # if catNumb is none, this means the user did not input any catalog number for search, which leaves us with two
+                # scenerios: 1) the user only have the subject description (cs, math only etc), in
+                # which case data is NOT NONE because classes for the subject are all fetched instead;
+                # 2) the user did not input anything at all (in which case data will be None)
+
+                # scenerio 2): len(numSearch) == 0 and len(subjSearch) > 0
                 if data is not None:
+                    # the IDEAL way to implement this will filter all classes based on a series of "if" statement
+                    # so that all searching conditions are considered
+
+                    # get all classes of the subject (filter by none)
+                    class_list = []
                     for i in data:
-                        classes.append(i)
-                else: # if data is None, it means the user didn't input anything to the subjSearch, but the user is still able to get here,
-                     # which means the user also did not input anything to the numSearch (otherwise ln46 will handle it). Note that we can
-                     # therotically also handle this exception at ln47 by adding a elif statement to redirect to the double-no-entry scenerio.
-                    messages.error(request, 'Please input something for us to search!')
+                        class_list.append(i)
+
+                    # update final_list at the end of each possible loop
+                    final_list = class_list
+
+                    # filter by instructor name
+                    instructor_name = request.GET['instructorSearch']
+                    if len(instructor_name) > 0:
+                        instructor_list = []
+                        for i in final_list:
+                            ins_name = i['instructor']['name'].upper().replace(" ", "")
+                            if ins_name == instructor_name.upper().replace(" ", ""):
+                                instructor_list.append(i)
+
+                        # update final_list at the end of each possible loop
+
+                        final_list = instructor_list
+
+                    # filter by unit number of the class
+                    minimum_unit = request.GET['UnitNumSearch']
+                    if len(minimum_unit) > 0:
+                        unit_list = []
+                        for i in final_list:
+                            class_unit = int(i["units"][-1])
+                            if class_unit >= int(minimum_unit):
+                                unit_list.append(i)
+
+                        # update final_list at the end of each possible loop
+                        final_list = unit_list
+
+                    # filter by component of the class
+                    component = request.GET.getlist("ComponentSearch")
+                    if len(component) > 0:
+                        component_list = []
+                        for i in final_list:
+                            class_component = i["component"]
+                            if class_component in component:
+                                component_list.append(i)
+
+                        # update final_list at the end of each possible loop
+                        final_list = component_list
+
+                    # assign 'final_list' to the 'classes' context variable
+                    classes = final_list
+
+                    messages.success(request,
+                                     "We have found " + str(len(classes)) + " classes that match your description!")
+                    return render(request, 'SBfinder/class.html',
+                                  {
+                                      "test": classes})  # Update their website with the subjects classes, changed url to class from /index
+
+                # scenerio 3): len(numSearch) == 0 and len(subSearch) == 0, no information is provided;
+                else:
+                    messages.error(request, 'Please provide a valid subject first!')
                     return HttpResponseRedirect(reverse('SBfinder:class'))
 
-
-
     return render(request, 'SBfinder/class.html',
-                      {"test": classes})  # Update their website with the subjects classes, changed url to class from /index
-
-
-
+                  {"test": classes})  # Update their website with the subjects classes, changed url to class from /index
 
 
 def create_user(request):
@@ -145,10 +262,10 @@ def generate_SB(request):
             name = name.replace(">", "")
 
             # don't want to fetch a user you already fetched
-            if str(name) + ","+idList[i] not in result_nameDic.keys():
+            if str(name) + "," + idList[i] not in result_nameDic.keys():
                 # prevents you from getting current user as a friend
                 if str(name) != current_userInfo.user_name and int(idList[i]) != current_userInfo.pk:
-                    result_nameDic[str(name) + "," +idList[i]] = []
+                    result_nameDic[str(name) + "," + idList[i]] = []
 
             # get all the classes
             if str(name) != current_userInfo.user_name and int(idList[i]) != current_userInfo.pk:
@@ -184,7 +301,8 @@ def accept_friend_request(request, requestID):
         friend_request.delete()
 
         # if the other user has sent a request to you as well, delete that request too
-        from_me_to_others = Friend_Request.objects.filter(from_user = friend_request.to_user, to_user = friend_request.from_user).first()
+        from_me_to_others = Friend_Request.objects.filter(from_user=friend_request.to_user,
+                                                          to_user=friend_request.from_user).first()
         if from_me_to_others is not None:
             from_me_to_others.delete()
 
@@ -195,6 +313,7 @@ def accept_friend_request(request, requestID):
         messages.error(request, 'Friend request not accepted.')
         return HttpResponseRedirect(reverse('SBfinder:friend_request'))
 
+
 def delete_friend(request, id):
     to_user = UserInfo.objects.get(id=id)
     current_userInfo = UserInfo.objects.get(correspond_user=request.user)
@@ -202,11 +321,13 @@ def delete_friend(request, id):
     current_userInfo.friends.remove(to_user)
 
     for message in Message.objects.all():
-        if (message.to_user == current_userInfo and message.from_user == to_user) or (message.from_user == current_userInfo and message.to_user == to_user):
+        if (message.to_user == current_userInfo and message.from_user == to_user) or (
+                message.from_user == current_userInfo and message.to_user == to_user):
             message.delete()
 
     messages.success(request, str(to_user.user_name) + ' has been removed from your friend list!')
     return HttpResponseRedirect(reverse('SBfinder:profile', args=(current_userInfo.slug,)) + '#friend')
+
 
 # create the Study session object
 @login_required()
@@ -244,7 +365,8 @@ def create_SS(request):
             to_user=user,
         )
 
-    messages.success(request, 'Your new study session has been created! Go to the study session section to check it out.')
+    messages.success(request,
+                     'Your new study session has been created! Go to the study session section to check it out.')
     # redirect the user to his/her profile where all study sessions are displayed
     return HttpResponseRedirect(reverse('SBfinder:study_session'))
 
@@ -275,7 +397,7 @@ def leave_study_session(request, id):
 # redirect users to the message page where all messages are contained
 def message_log(request, id):
     to_user = UserInfo.objects.get(pk=id)
-    from_user = UserInfo.objects.get(correspond_user = request.user)
+    from_user = UserInfo.objects.get(correspond_user=request.user)
     message_model = []  # list containing all messages between specified users
     for message in Message.objects.all():
         if (message.to_user == to_user and message.from_user == from_user) or (
@@ -289,23 +411,24 @@ def message_log(request, id):
 
 def generate_message(request, id):
     message, created = Message.objects.get_or_create(
-        from_user=UserInfo.objects.get(correspond_user = request.user),
+        from_user=UserInfo.objects.get(correspond_user=request.user),
         to_user=UserInfo.objects.get(pk=id),
         message_body=request.POST['message_body'],
         time=timezone.now(),
     )
 
-    return HttpResponseRedirect(reverse('SBfinder:message_log', args=(id, )))
+    return HttpResponseRedirect(reverse('SBfinder:message_log', args=(id,)))
+
 
 @login_required
 def upload_pic(request):
-    current_user = UserInfo.objects.get(correspond_user = request.user)
+    current_user = UserInfo.objects.get(correspond_user=request.user)
 
     try:
         current_user.avatar = request.FILES['img']
         current_user.save()
         messages.success(request, 'Profile picture successfully uploaded!')
-        return HttpResponseRedirect(reverse('SBfinder:setting', args=(current_user.pk, )))
+        return HttpResponseRedirect(reverse('SBfinder:setting', args=(current_user.pk,)))
     except MultiValueDictKeyError:
         messages.error(request, "Please upload a picture! We cannot save an empty picture.")
         return HttpResponseRedirect(reverse('SBfinder:setting', args=(current_user.pk,)))
@@ -329,9 +452,6 @@ def update_profile(request):
 
     messages.success(request, 'Profile successfully updated!')
     return HttpResponseRedirect(reverse('SBfinder:setting', args=(current_user.pk,)))
-
-
-
 
 
 # generic views -----------------------------------------------------------------------
@@ -360,6 +480,7 @@ class studyView(generic.ListView):
     template_name = 'SBfinder/study_session.html'
     model = Study_Session_Request
     context_object_name = "study_session_request"
+
 
 # a seperate html page where user can submit a form to generate a Study session with his/her friends
 class generateSSView(generic.DetailView):

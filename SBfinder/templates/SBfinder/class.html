@@ -1,6 +1,5 @@
 {% extends "SBfinder/base.html" %}
 {% block content %}
-
 <style>
 .button {
   background-color: #026670;
@@ -37,6 +36,11 @@ h1{
 }
 
 
+
+
+
+
+
 </style>
 <body>
 
@@ -46,9 +50,57 @@ h1{
     <h1 class="text-center">Class Search </h1>
     <hr/>
     <form class="text-center mt-4" method="GET">
-        <input type="text" name="subjSearch" placeholder="APMA, CS, etc ..." class="text-center">
-        <input type="text" name="numSearch" placeholder="1010, 3240, etc ..." class="text-center">
-        <button class="button" type="submit">SEARCH CLASS</button>
+        <div class="mb-4">
+            <input type="text" name="subjSearch" placeholder="APMA, CS, etc ..." class="text-center">
+            <input type="text" name="numSearch" placeholder="1010, 3240, etc ..." class="text-center">
+
+            <button class="button" type="submit">SEARCH CLASS</button>
+        </div>
+
+        <button type="button" class="btn btn-info" id="collapseSearch" data-bs-toggle="collapse"
+                data-bs-target="#advancedSearch"
+                aria-expanded="false" aria-controls="advancedSearch"
+                style="width: 100%; background-color: #026670; color: white;">Advanced Search Options +
+        </button>
+
+        <div id="advancedSearch" class="collapse" style="background-color: gray; padding-bottom: 4px;">
+            <div style="display: flex;">
+                <div style="margin-right: 5px; margin-left: 5px;">
+                    <strong>Instructor Name:</strong><br>
+                    <input type="text" name="instructorSearch" placeholder="Instructor's Full Name">
+                </div>
+
+                <div style="margin-right: 10px;">
+                    <strong>Minimum Unit:</strong><br>
+                    <input type="text" name="UnitNumSearch" placeholder="Minimum Units">
+                </div>
+
+                <div>
+                    <strong>Component: </strong><br>
+                    <div style = "display:flex;">
+                        <h6 style="text-align:left; margin-right: 2px;">LAB:</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="Lab_check"
+                                   name="ComponentSearch" value="LAB">
+                        </div>
+                        <h6 style="text-align:left; margin-right: 2px;">LEC (Lecture):</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="LEC_check"
+                                   name="ComponentSearch" value="LEC">
+                        </div>
+                        <h6 style="text-align:left; margin-right: 2px;">DIS (Discussion):</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="DIS_check"
+                                   name="ComponentSearch" value="DIS">
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </form>
 </div>
 <div class="mx-auto" style="width: 1200px;"><br>
@@ -68,7 +120,8 @@ h1{
                 <blockquote class="blockquote mb-0">
                     Instructor: {{ i.instructor.name }} <br>
                     Section: {{ i.course_section }}-{{ i.component }} <br>
-                    Class Number: {{ i.course_number }}</br>
+                    Class Number: {{ i.course_number }}<br>
+                    Units: {{ i.units }}
                 </blockquote>
             </div>
         </div>
@@ -76,7 +129,32 @@ h1{
     {% endfor %}
 </div>
 {% else %}
-<br><h3 class="text-center" style="color: #026670;">Oops! We haven't found any classes that match your description :(</h3>
+<br>
+<h3 class="text-center" style="color: #026670;">Oops! We haven't found any classes that match your description :(</h3>
 {% endif %}
 </body>
+
+<script>
+    var input = document.querySelectorAll('input');
+    for(i=0; i<input.length; i++){
+        if (input[i].getAttribute('placeholder') != null) {
+            input[i].setAttribute('size',input[i].getAttribute('placeholder').length);
+        }
+    }
+
+    var collSearch = document.getElementById('collapseSearch');
+
+    collSearch.onclick = function() {
+        if (collSearch.getAttribute('aria-expanded') == "true") {
+        collSearch.innerHTML = "Hide Options - ";
+        }
+
+        if (collSearch.getAttribute('aria-expanded') == "false") {
+        collSearch.innerHTML = "Advanced Search Options +";
+        }
+    }
+
+
+
+</script>
 {% endblock %}

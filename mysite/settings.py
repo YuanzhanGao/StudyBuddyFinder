@@ -152,7 +152,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 7 # change this to 7 if deploying to Heroku
+SITE_ID = 8 # change this to 7 if deploying to Heroku
 
 LOGIN_REDIRECT_URL = '/sbfinder/createuser/'
 LOGOUT_REDIRECT_URL = '/'
@@ -180,7 +180,7 @@ MEDIA_URL = '/images/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
 # set to True so that request over http are redirected to https instead
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 
 
