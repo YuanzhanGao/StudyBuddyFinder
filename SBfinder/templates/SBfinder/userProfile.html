@@ -3,6 +3,7 @@
 {% block content %}
 
 <head>
+    <title>{{userInfo.user_name}}'s Dash Board</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
 
@@ -40,6 +41,7 @@
 
         .btnnobg:hover {
         color: #ff0000;
+        opacity:1;
         }
 
         .btn2 {
@@ -95,14 +97,85 @@
         }
 
         /* Style images */
-.container img {
-  float: left;
-  max-width: 60px;
-  width: 100%;
-  margin-right: 20px;
-  border-radius: 50%;
-  height: 60px;
-}
+        .container img {
+          float: left;
+          max-width: 60px;
+          width: 100%;
+          margin-right: 20px;
+          border-radius: 50%;
+          height: 60px;
+        }
+
+        /* The Modal (background) */
+        .modal {
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: #474e5d;
+          padding-top: 50px;
+          background: rgba(0,0,0,0.7);
+          color: #fff;
+        }
+
+        /* The Modal Close Button (x) */
+        .close {
+          position: absolute;
+          right: 35px;
+          top: 15px;
+          font-size: 40px;
+          font-weight: bold;
+          color: white;
+        }
+
+        .close:hover,
+        .close:focus {
+          color: #f44336;
+          cursor: pointer;
+        }
+
+        .cancelbtn, .deletebtn {
+          float: left;
+          width: 50%;
+        }
+
+        .cancelbtn:hover, .deletebtn:hover {
+            transform: scale(1.1);
+
+        }
+
+        /* Add a color to the cancel button */
+        .cancelbtn {
+          background-color: #ccc;
+          color: black;
+        }
+
+        /* Add a color to the delete button */
+        .deletebtn {
+          background-color: #f44336;
+        }
+
+        #delete_confirm_box {
+          background-color: #fefefe;
+          margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+          border: 1px solid #888;
+          width: 80%; /* Could be more or less, depending on screen size */
+          padding: 15px;
+        }
+
+        .clearfix::after {
+          content: "";
+          clear: both;
+          display: table;
+        }
+
+
+
+
+
     </style>
 </head>
 
@@ -141,14 +214,30 @@ function uncheckAll() {
 
 }
 
+function display_remove_confirm() {
+ document.getElementById('delete_confirm').style.display='block';
+ document.querySelector("body").style.overflow = "hidden";
+
+}
+
+function cancel_remove_confirm() {
+ document.getElementById('delete_confirm').style.display='none';
+ document.querySelector("body").style.overflow = "auto";
+
+
+}
+
+
+
+
 
 
 </script>
 
 {% include 'SBfinder/messages.html' %}
 
-<div class = "pt-4 mb-0 text-center">
-<img src="{{ userInfo.avatar.url }}" class="img-circle" alt="User Image" width = "200" height = "200">
+<div class="pt-4 mb-0 text-center">
+    <img src="{{ userInfo.avatar.url }}" class="img-circle" alt="User Image" width="200" height="200">
 </div>
 
 <div class="col-md-12 inline-flex">
@@ -173,9 +262,10 @@ function uncheckAll() {
 <form action="{% url 'SBfinder:generate_SB'%}" method="POST">
     {% csrf_token %}
     <h2 class="pt-2 pb-1 text-left font-weight-bold">&emsp;Schedule</h2>
-    <div class = "text-center">
+    <div class="text-center">
         {% if userInfo.course_set.all|length == 0 %}
-        <h4 style="color:#026670;">You don't have anything in your schedule. Explore classes using the class search!</h4>
+        <h4 style="color:#026670;">You don't have anything in your schedule. Explore classes using the class
+            search!</h4>
         {% endif %}
     </div>
 
@@ -192,10 +282,30 @@ function uncheckAll() {
         <div class="card left-align">
             <div class="h4 card-header">
                 <strong class="left">{{ class.subject }} {{ class.catalog_number }}: {{ class.description }}</strong>
-                <button type="button" class="btn right">
-                    <a href=" {% url 'SBfinder:delete_from_schedule' class.id%} " class="nounderline">Remove from
-                        schedule</a>
+                <button onclick="display_remove_confirm()" type="button"
+                        class="btn right">
+                    <!-- <a href=" {% url 'SBfinder:delete_from_schedule' class.id%} " class="nounderline"> -->
+                    <!-- document.getElementById('delete_confirm').style.display='block' -->
+                    Remove from schedule
                 </button>
+                <!-- Confirm deletion of the item -->
+                <div id="delete_confirm" class="modal">
+                    <span onclick="cancel_remove_confirm()" class="close"
+                          title="Close Modal">&times;</span>
+                    <div class="container" id="delete_confirm_box">
+                        <h3 style="color: black; text-align: center; ">Are you sure you want to remove {{class.subject}}
+                            {{class.catalog_number}} from the schedule?</h3>
+                        <div class="clearfix">
+                            <button type="button" class="cancelbtn"
+                                    onclick="cancel_remove_confirm()">Cancel
+                            </button>
+                            <button type="button" class="deletebtn">
+                                <a href=" {% url 'SBfinder:delete_from_schedule' class.id%} " class="nounderline">
+                                    Remove</a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <br>
             </div>
             <div class="card-body">
@@ -236,58 +346,66 @@ function uncheckAll() {
 
 <!-- Friend Section -->
 
-<div class = "d-inline-flex">
+<div class="d-inline-flex">
     <h2 class="pt-2 text-left font-weight-bold">&ensp;&ensp;Friends </h2>
 </div>
-<div class = "text-center">
-        {% if userInfo.friends.all|length == 0 %}
-        <h4 style="color:#026670;">You don't have any friends yet :( Add a friend from your list of study buddies!</h4>
-        <br>
-        {% endif %}
+<div class="text-center">
+    {% if userInfo.friends.all|length == 0 %}
+    <h4 style="color:#026670;">You don't have any friends yet :( Add a friend from your list of study buddies!</h4>
+    <br>
+    {% endif %}
 </div>
 
 <div class="container">
     <div class="row">
-    {% for friend in userInfo.friends.all %}
-    <div class="col-sm-3">
-        <div class="card ml-2 mb-3" style="width: 17rem;">
-            <div class = "card-header" style = "background-color: #03474d; display: inline; justify-content:space-between;">
-                <img src="{{ friend.avatar.url }}" class="card-img-left float-left" height = "180">
-                <h5 class = "text-capitalize mt-3 pt-1">{{ friend.user_name }} 
-                    <button type="button" class="btnnobg right">
-                        <a href=" {% url 'SBfinder:delete_friend' friend.id%} " class = "btnnobg fa fa-trash-o"></a>
-                    </button>
-                </h5> 
-            </div>
+        {% for friend in userInfo.friends.all %}
+        <div class="col-sm-3">
+            <div class="card ml-2 mb-3" style="width: 17rem;">
+                <div class="card-header"
+                     style="background-color: #03474d; display: inline; justify-content:space-between;">
+                    <img src="{{ friend.avatar.url }}" class="card-img-left float-left" height="180">
+                    <h5 class="text-capitalize mt-3 pt-1">{{ friend.user_name }}
+                        <button type="button" class="btnnobg right">
+                            <a href=" {% url 'SBfinder:delete_friend' friend.id%} " class="btnnobg fa fa-trash-o"></a>
+                        </button>
+                    </h5>
+                </div>
 
-            <div class="card-body text-center" style = "background-color: #026670; color:#edeae5;">
-                <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                    View Schedule </button>
+                <div class="card-body text-center" style="background-color: #026670; color:#edeae5;">
+                    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
+                            aria-expanded="false" aria-controls="collapseExample">
+                        View Schedule
+                    </button>
                     <button type="button" class="btn text-center">
-                        <a href=" {% url 'SBfinder:message_log' friend.id%} " class = "nounderline">Message</a>
+                        <a href=" {% url 'SBfinder:message_log' friend.id%} " class="nounderline">Message</a>
                     </button>
-                <div class="collapse" id="collapseExample">
-                  <div class="card card-body">
+                    <div class="collapse" id="collapseExample">
+                        <div class="card card-body">
 
-                <!-- SCHEDULE -->
-                {% for class in friend.course_set.all %}
-                <ul class="list-group list-group-flush">
-                    {% if class in userInfo.course_set.all %}
-                    <li class="list-group-item text-center" style = "background-color: #95edd7;">{{ class.subject }} {{ class.catalog_number }}</li>
-                    {% else %}
-                    <li class="list-group-item text-center">{{ class.subject }} {{ class.catalog_number }}</li>
-                    {% endif %}
-                {% endfor %}
-                </ul>
-                <div class = "mt-2" style = "color: #026670; font-size: 0.6em;">*highlighted classes are classes you have in common</div>
-                <!-- SCHEDULE END -->
-                <br>
-                  </div>
+                            <!-- SCHEDULE -->
+                            {% for class in friend.course_set.all %}
+                            <ul class="list-group list-group-flush">
+                                {% if class in userInfo.course_set.all %}
+                                <li class="list-group-item text-center" style="background-color: #95edd7;">{{
+                                    class.subject }} {{ class.catalog_number }}
+                                </li>
+                                {% else %}
+                                <li class="list-group-item text-center">{{ class.subject }} {{ class.catalog_number }}
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                            <div class="mt-2" style="color: #026670; font-size: 0.6em;">*highlighted classes are classes
+                                you have in common
+                            </div>
+                            <!-- SCHEDULE END -->
+                            <br>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
     </div>
 </div>
 

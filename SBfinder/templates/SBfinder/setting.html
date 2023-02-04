@@ -2,6 +2,7 @@
 {% block content %}
 
 <head>
+    <title>Setting</title>
     <style>
 
     /*Title: Styling an input type="file" button */
@@ -85,7 +86,7 @@ jQuery(document).ready(function () {
                 <hr/>
 
                 <div>
-                    Your Google Account Username: {{user.username}}
+                    Your Google Account Username: <span style = "color: red;">{{user.username}}</span>
                     <div style="color: gray; font-size: 0.8em;">* This is your default username with Google and cannot
                         be changed here.
                     </div>
@@ -107,6 +108,7 @@ jQuery(document).ready(function () {
 
                         <div class="col-md-12"><label class="labels">School Year</label>
                             <select name="year" id="year">
+                                <option style = "color: gray;" value = "Hidden">Prefer Not to Say</option>
                                 <option value="First">First</option>
                                 <option value="Second">Second</option>
                                 <option value="Third">Third</option>
