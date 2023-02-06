@@ -24,7 +24,6 @@ class IndexView(generic.ListView):
     template_name = 'SBfinder/index.html'
 
     def get_queryset(self):
-        """Return the last five published questions."""
         return 0;
 
 

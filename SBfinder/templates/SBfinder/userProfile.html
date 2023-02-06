@@ -140,10 +140,11 @@
         .cancelbtn, .deletebtn {
           float: left;
           width: 50%;
+          margin-bottom: 10px;
         }
 
         .cancelbtn:hover, .deletebtn:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
 
         }
 
@@ -159,11 +160,12 @@
         }
 
         #delete_confirm_box {
-          background-color: #fefefe;
+          background-color: white;
           margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
-          border: 1px solid #888;
-          width: 80%; /* Could be more or less, depending on screen size */
-          padding: 15px;
+          border: 5px solid cyan;
+          border-style: solid;
+          width: 50%; /* Could be more or less, depending on screen size */
+          height: 30%;
         }
 
         .clearfix::after {
@@ -284,8 +286,6 @@ function cancel_remove_confirm() {
                 <strong class="left">{{ class.subject }} {{ class.catalog_number }}: {{ class.description }}</strong>
                 <button onclick="display_remove_confirm()" type="button"
                         class="btn right">
-                    <!-- <a href=" {% url 'SBfinder:delete_from_schedule' class.id%} " class="nounderline"> -->
-                    <!-- document.getElementById('delete_confirm').style.display='block' -->
                     Remove from schedule
                 </button>
                 <!-- Confirm deletion of the item -->
@@ -293,8 +293,9 @@ function cancel_remove_confirm() {
                     <span onclick="cancel_remove_confirm()" class="close"
                           title="Close Modal">&times;</span>
                     <div class="container" id="delete_confirm_box">
-                        <h3 style="color: black; text-align: center; ">Are you sure you want to remove {{class.subject}}
-                            {{class.catalog_number}} from the schedule?</h3>
+                        <h2 style = "color: red; text-align: center;">!</h2>
+                        <h4 style="color: black; text-align: center; ">Are you sure you want to remove {{class.subject}}
+                            {{class.catalog_number}} from the schedule?</h4>
                         <div class="clearfix">
                             <button type="button" class="cancelbtn"
                                     onclick="cancel_remove_confirm()">Cancel
